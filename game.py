@@ -53,7 +53,7 @@ class Adversary(object):
         # Return a rule with a probability of 1/14
         prob_list = [i for i in range(14)]
         prob = prob_list[randint(0, 13)]
-        if prob == 4:
+        if prob == 3:
             # Generate a random rule
             rule = ""
             conditions = ["equal", "greater"]
@@ -74,8 +74,8 @@ class Adversary(object):
 
 
 # Set a rule for testing
-rule = "and(equal(suit(current),suit(previous)), equal(even(current), T))"
-cards = ["8C", "2C", "10C"]
+rule = "even(current)"
+cards = ["8C", "2H", "10C"]
 tree = parse(rule)
 
 
@@ -95,10 +95,13 @@ The cards passed to scientist are the last 3 cards played.
 Use these to update your board state.
 """
 for round_num in range(14):
+    print ('round',round_num)
+    
     # Each player plays a card or guesses a rule
     try:
         # Player 1 plays
         player_card_rule = player.play()
+        print ('player card/rule:', player_card_rule)
         if is_card(player_card_rule):
             # checking whether card played is correct or wrong
             temp_cards= [cards[-2],cards[-1], player_card_rule]
@@ -110,6 +113,7 @@ for round_num in range(14):
             player.update_card_to_boardstate(player_card_rule, result)
 
         else:
+            print('player ended')
             raise Exception('')
 
         # Adversary 1 plays
@@ -123,6 +127,7 @@ for round_num in range(14):
             player.update_card_to_boardstate(ad1_card_rule, result)
 
         else:
+            print('adversery 1 ended')
             raise Exception('')
 
         # Adversary 2 plays
@@ -135,6 +140,7 @@ for round_num in range(14):
                 cards.append(ad2_card_rule)
             player.update_card_to_boardstate(ad2_card_rule, result)
         else:
+            print('adversery 2 ended')
             raise Exception('')
 
         # Adversary 3 plays
@@ -147,6 +153,7 @@ for round_num in range(14):
                 cards.append(ad3_card_rule)
             player.update_card_to_boardstate(ad3_card_rule, result)
         else:
+            print('adversery 3 ended')
             raise Exception('')
 
     except:

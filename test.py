@@ -22,6 +22,7 @@ first_round = True
 previous2 = ""
 previous1 = ""
 current = ""
+countStage=0
 
 cards_seen = []
 
@@ -39,6 +40,12 @@ cardsLastThree =[]
 cardsCount=0
 boardState1=[]
 scoreCard=0
+
+tempCount=0
+
+number_list = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"]
+suit_list = ["C","D","H","S"]
+cards = [a+b for a in number_list for b in suit_list]
 
 
 def update_card_to_boardState(card):            # Updates the recent three cards played
@@ -453,14 +460,31 @@ def setRule(temp_rule):
     current_rule = temp_rule
 
 
+def generate_FalseCard(rule):
+    global cards
+    #print (rule)
+    trueCards=[]
+    falseCards=[]
+    for j in cards:        
+        tempTree = parse(rule)
+        tempCards = [previous2,previous1, j]
+        if tempTree.evaluate(tempCards):
+            trueCards.append(j)
+    for k in cards:
+        if k not in trueCards:
+            falseCards.append(k)
+    return falseCards
+                
 
-def scientist( hand, ended):
-    global previous2, previous1, current, card_labels, cards_seen, board_state, FinalRule, boardState1
-    card = random.choice(hand)
+
+def scientist(hand, ended):
+    global previous2,countStage, previous1, current, card_labels, cards_seen, board_state, FinalRule, boardState1,tempCount
+    
+    #card = random.choice(hand)
     #print (boardState1)
 
-
-
+    countStage +=1
+    
     if first_round==True:
         # print("entered first round")
         initialize_dict()
@@ -470,8 +494,18 @@ def scientist( hand, ended):
         #generate rule and set
         if previous2 != "":
             FinalRule=generate_rule(previous2, previous1, current)
-
-        return card
+            ########Flase card generator
+            tempFalseCardList=generate_FalseCard(FinalRule)
+            card=random.choice(generate_FalseCard)
+            ###############
+        if ended == True:
+            print("Score : ",score())
+            print("FINAL RULE : ", FinalRule)
+            return FinalRule
+        elif countStage==4:
+            return FinalRule
+        else:
+            return card
 
     elif first_round == False:# and ended == False:
         #get_gain(attribute_matrix)
@@ -490,7 +524,20 @@ def scientist( hand, ended):
         # print(pathMat)
         if(len(pathMat)==0):
             FinalRule = orFunc(generate_rule(previous2, previous1, current))
-            print("FINAL RULE : ", FinalRule)
+            if ((tempCount<1) and (score()>0)):
+                tempCount=1
+                print("Score:", score())
+                tempFalseCardList=generate_FalseCard(FinalRule)
+                card=random.choice(tempFalseCardList)
+                #print ("FINAL RULE", FinalRule)
+                return card
+            #print("FINAL RULE : ", FinalRule)
+             ########Flase card generator
+            tempFalseCardList=generate_FalseCard(FinalRule)
+            #print(tempFalseCardList)
+            #card=random.choice(tempFalseCardList)
+            card=random.choice(hand)
+            ###############
             print("")
             return card
         atmoicOR=[]
@@ -502,11 +549,18 @@ def scientist( hand, ended):
             atmoicOR.append(andFunc(atomicAnd))
 
         FinalRule=orFunc(atmoicOR)
-
+        
+        ########Flase card generator
+        tempFalseCardList=generate_FalseCard(FinalRule)
+        if not(len(tempFalseCardList) == 0): 
+            card=random.choice(tempFalseCardList)
+        ###############
 
         if ended == True:
             print("Score : ",score())
             print("FINAL RULE : ", FinalRule)
+            return FinalRule
+        elif countStage==4:
             return FinalRule
         else:
             return card
